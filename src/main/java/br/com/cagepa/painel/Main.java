@@ -12,7 +12,7 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("=== INICIANDO SISTEMA PAINEL CAGEPA ===");
 
-        //1. Instancia o Proxy
+        //Instancia o Proxy (Ele que controla o acesso à Fachada real)
         IFachada sistema = new FachadaProxy();
 
         JWTToken tokenAdmin = null;
@@ -61,6 +61,41 @@ public class Main {
         for(ClienteDTO c : clientes) {
             System.out.println("- Cliente: " + c.nome() + " | Doc: " + c.cpfCnpj());
         }
+
+        //Teste 05: Processamento de Imagem (Template Method + Adapter)
+        System.out.println("\n--- Teste 5: Processamento de Imagem ---");
+
+        br.com.cagepa.painel.subsistemas.processamento_imagem.ProcessadorImagemImpl processador = new br.com.cagepa.painel.subsistemas.processamento_imagem.ProcessadorImagemImpl();
+
+        try {
+            var leitura = processador.processar("C:/imagens/hidrometro_01.jpg", "SHA-123");
+            System.out.println("RESULTADO FINAL: Leitura gerada -> " + leitura.getValorM3() + "m3");
+        } catch (Exception e) {
+            System.out.println("Erro no processamento: " + e.getMessage());
+        }
+
+        //Teste 06: Monitoramento (Strategy + Observer)
+        System.out.println("\n--- Teste 6: Monitoramento de Consumo ---");
+
+        br.com.cagepa.painel.subsistemas.monitoramento.AgregadorConsumo agregador = new br.com.cagepa.painel.subsistemas.monitoramento.AgregadorConsumo();
+
+        //Configurando Observer
+        agregador.getSubject().adicionarObservador(l -> {
+            System.out.println(">> ALERTA (Observer): Nova leitura detectada no SHA " + l.getMatriculaSHA() + " Valor: " + l.getValorM3());
+        });
+
+        //Simulando a chegada de uma leitura
+        var leituraRecente = new br.com.cagepa.painel.core.entidades.Leitura("SHA-123", 150.0);
+        agregador.novaLeituraRecebida(leituraRecente);
+
+        //Testando o Strategy (Cálculo)
+        List<br.com.cagepa.painel.core.entidades.Leitura> historico = List.of(
+                new br.com.cagepa.painel.core.entidades.Leitura("SHA-123", 100.0),
+                new br.com.cagepa.painel.core.entidades.Leitura("SHA-123", 200.0)
+        );
+
+        double media = agregador.processarHistorico(historico);
+        System.out.println("Cálculo via Strategy (Média): " + media);
 
         System.out.println("\n=== FIM DOS TESTES ===");
     }
