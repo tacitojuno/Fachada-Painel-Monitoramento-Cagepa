@@ -6,14 +6,24 @@
 Template para CTRL C + V: █
 
 ```
-██================== (Funcionalidades)
+████████============ (Funcionalidades)
 ```
 ```
-██================== (Testes)
+████████============ (Testes)
 ```
 ```
-==================== (Geral)
+██████============== (Geral)
 ```
+
+#### [02/12/2025]
+- Subsistema 4: Processamento de Imagens.
+- Implementação do Template Method (Ler -> OCR -> Validar -> Salvar).
+- Implementação do Adapter (Simular Tesseract OCR).
+- Subsistema 2: Monitoramento de Consumo.
+- Implementação de Strategy (Cálculo de Consumo) e Observer (Notificações de Leitura).
+- Testes:
+  - Processamento de Imagens (Template Method e Adapter funcionando).
+  - Monitoramento de Consumo (Strategy e Observer funcionando).
 
 #### [01/12/2025]
 - Implementação do Subsistema 5 (Auth).
@@ -36,11 +46,11 @@ Template para CTRL C + V: █
 
 **Localização no Código:**
 ```
-br.com.cagepa.painel.infra
+br.com.cagepa.painel.infra;
 └── Logger.java   ← Implementação do Singleton
 ```
 ```
-br.com.cagepa.painel.subsistemas.auth
+br.com.cagepa.painel.subsistemas.auth;
 └── AuthManager.java   ← Implementação do Singleton
 ```
 
@@ -48,7 +58,7 @@ br.com.cagepa.painel.subsistemas.auth
 
 **Localização no Código:**
 ```
-br.com.cagepa.painel.subsistemas.auth
+br.com.cagepa.painel.subsistemas.auth;
 └── FachadaProxy.java   ← Implementação do Proxy
 ```
 
@@ -56,7 +66,7 @@ br.com.cagepa.painel.subsistemas.auth
 
 **Localização no Código:**
 ```
-br.com.cagepa.painel.subsistemas.clientes
+br.com.cagepa.painel.subsistemas.clientes;
 └── ClienteRepository.java   ← Implementação do Repository (Interface)
 ```
 
@@ -64,6 +74,41 @@ br.com.cagepa.painel.subsistemas.clientes
 
 **Localização no Código:**
 ```
-br.com.cagepa.painel.subsistemas.clientes
+br.com.cagepa.painel.subsistemas.clientes;
 └── ClienteFactory.java   ← Implementação do Factory
+```
+
+### 5. **Template Method**
+
+**Localização no Código:**
+```
+br.com.cagepa.painel.subsistemas.processamento_imagem;
+└── ImagemProcessorTemplate.java   ← Implementação do Template Method
+```
+
+### 6. **Adapter**
+
+**Localização no Código:**
+```
+br.com.cagepa.painel.subsistemas.processamento_imagem;
+├── OCRAdapter.java   ← Interface do Adapter
+└── TesseractAdapter.java  ← Implementação do Adapter (Simulação do Tesseract OCR)
+```
+
+### 7. **Strategy**
+
+**Localização no Código:**
+```
+br.com.cagepa.painel.subsistemas.monitoramento;
+├── ICalculoConsumoStrategy.java   ← Interface do Strategy
+└── AgregadorConsumo.java  ← Utilização do Strategy
+```
+
+### 8. **Observer**
+
+**Localização no Código:**
+```
+br.com.cagepa.painel.subsistemas.monitoramento;
+├── IMonitoramentoObserver.java   ← Interface do Observer
+└── AgregadorConsumo.java  ← Utilização do Observer
 ```
