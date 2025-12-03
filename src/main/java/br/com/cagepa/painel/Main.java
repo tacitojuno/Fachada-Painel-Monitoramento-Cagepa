@@ -97,6 +97,24 @@ public class Main {
         double media = agregador.processarHistorico(historico);
         System.out.println("Cálculo via Strategy (Média): " + media);
 
+        //Teste 07: Sistema de Alertas (Chain of Responsibility + Template Method)
+        System.out.println("\n--- Teste 7: Sistema de Alertas ---");
+
+        br.com.cagepa.painel.subsistemas.notificacao.AlertaService alertaService =
+                new br.com.cagepa.painel.subsistemas.notificacao.AlertaService();
+
+        //Cenário 1: Consumo normal (sem alertas)
+        System.out.println(">> Processando leitura normal (50m3)...");
+        alertaService.processarLeitura(new br.com.cagepa.painel.core.entidades.Leitura("SHA-001", 50.0));
+
+        //Cenário 2: Consumo elevado (Chain preventiva)
+        System.out.println("\n>> Processando leitura alta (85m3)...");
+        alertaService.processarLeitura(new br.com.cagepa.painel.core.entidades.Leitura("SHA-002", 85.0));
+
+        //Cenário 3: Consumo crítico (Chain crítica + Notificação)
+        System.out.println("\n>> Processando leitura crítica (110m3)...");
+        alertaService.processarLeitura(new br.com.cagepa.painel.core.entidades.Leitura("SHA-003", 110.0));
+
         System.out.println("\n=== FIM DOS TESTES ===");
     }
 
