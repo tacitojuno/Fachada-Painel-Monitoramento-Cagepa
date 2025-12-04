@@ -28,7 +28,7 @@ public class AgregadorConsumo {
     }
 
     public void novaLeituraRecebida(Leitura leitura) {
-        //... Lógica de salvar no vanco de dados, etc.
+        //Lógica de salvar no banco de dados, etc.
         subject.notificarObservadores(leitura);
     }
 }
