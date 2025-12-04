@@ -6,14 +6,27 @@
 Template para CTRL C + V: █
 
 ```
-████████============ (Funcionalidades)
+████████████====     (Funcionalidades)
 ```
 ```
-████████============ (Testes)
+████████████====     (Testes)
 ```
 ```
-██████============== (Geral)
+██████████████====== (Geral)
 ```
+
+#### [04/12/2025]
+- Finalização dos Requisitos de Negócio (Produto Mínimo Viável).
+- Melhoria do CRUD: Adição da funcionalidade de remoção de clientes (Delete) no Gestor e na Fachada.
+- Implementação de Monitoramento Temporal:
+  - Refatoração da entidade Hidrometro para armazenar histórico (Lista de Leituras).
+  - Criação de fluxo para persistir leituras durante a varredura do monitoramento.
+  - Criação de funcionalidade de consulta de histórico por matrícula.
+- Refatoração: Remoção de classes órfãs e arquivos de infraestrutura não utilizados.
+- Atualização da Interface (CLI): Adição das opções "7. Consultar Histórico" e "8. Remover Cliente".
+- Testes:
+  - Validação do ciclo completo de CRUD.
+  - Validação da persistência de histórico e consulta de consumo temporal.
 
 #### [03/12/2025]
 - Subsistema 3: Alertas e Notificação.
@@ -103,7 +116,7 @@ package br.com.cagepa.painel.subsistemas.notificacao;
 ```
 br.com.cagepa.painel.subsistemas.processamento_imagem;
 ├── OCRAdapter.java   ← Interface do Adapter
-└── TesseractAdapter.java  ← Implementação do Adapter (Simulação do Tesseract OCR)
+└── TesseractAdapter.java  ← Implementação do Adapter
 ```
 
 ### 7. **Strategy**
@@ -133,7 +146,16 @@ br.com.cagepa.painel.subsistemas.notificacao;
 └── AlertaService.java  ← Utilização da Chain of Responsability
 ```
 
-## Testes Individuais de Funcionalidades Realizados
+### 10. **Facade**
+
+**Localização no Código:**
+```
+br.com.cagepa.painel.core.fachada;
+├── IFachada.java   ← Interface da Fachada
+└── FachadaPainel.java  ← Implementação da Fachada
+```
+
+## Testes Individuais de Funcionalidades Realizados (Só para visualizar os padrões inicialmente)
 
 ```
 //Instancia o Proxy (Ele que controla o acesso à Fachada real)
