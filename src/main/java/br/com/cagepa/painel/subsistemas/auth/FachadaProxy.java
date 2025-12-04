@@ -1,6 +1,7 @@
 package br.com.cagepa.painel.subsistemas.auth;
 
 import br.com.cagepa.painel.core.dtos.ClienteDTO;
+import br.com.cagepa.painel.core.dtos.ConsumoDTO;
 import br.com.cagepa.painel.core.excecoes.AutenticacaoException;
 import br.com.cagepa.painel.core.fachada.FachadaPainel;
 import br.com.cagepa.painel.core.fachada.IFachada;
@@ -39,5 +40,35 @@ public class FachadaProxy implements IFachada {
     public List<ClienteDTO> listarClientes(String token) {
         verificarPermissao(token);
         return fachadaReal.listarClientes(token);
+    }
+
+    @Override
+    public void processarLeituraManual(String camminhoImagem, String matriculaSHA, String token) {
+        verificarPermissao(token);
+        fachadaReal.processarLeituraManual(camminhoImagem, matriculaSHA, token);
+    }
+
+    @Override
+    public void monitorarRede(String token) {
+        verificarPermissao(token);
+        fachadaReal.monitorarRede(token);
+    }
+
+    @Override
+    public void vincularHidrometro(String cpfCnpj, String matricula, String caminhoPasta, String token) {
+        verificarPermissao(token);
+        fachadaReal.vincularHidrometro(cpfCnpj, matricula, caminhoPasta, token);
+    }
+
+    @Override
+    public void removerCliente(String cpf, String token) {
+        verificarPermissao(token);
+        fachadaReal.removerCliente(cpf, token);
+    }
+
+    @Override
+    public List<ConsumoDTO> consultarHistoricoSHA(String matricula, String token) {
+        verificarPermissao(token);
+        return fachadaReal.consultarHistoricoSHA(matricula, token);
     }
 }
