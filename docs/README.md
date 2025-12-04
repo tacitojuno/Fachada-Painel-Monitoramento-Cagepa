@@ -104,8 +104,9 @@ br.com.cagepa.painel.subsistemas.clientes;
 ```
 br.com.cagepa.painel.subsistemas.processamento_imagem;
 └── ImagemProcessorTemplate.java   ← Implementação do Template Method
-
-package br.com.cagepa.painel.subsistemas.notificacao;
+```
+```
+br.com.cagepa.painel.subsistemas.notificacao;
 └── NotificadorTemplate.java   ← Implementação do Template Method
 └── AlertaService.java  ← Utilização do Template Method
 ```
