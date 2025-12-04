@@ -1,121 +1,205 @@
 package br.com.cagepa.painel;
 
 import br.com.cagepa.painel.core.dtos.ClienteDTO;
-import br.com.cagepa.painel.core.excecoes.AutenticacaoException;
+import br.com.cagepa.painel.core.dtos.ConsumoDTO;
 import br.com.cagepa.painel.core.fachada.IFachada;
 import br.com.cagepa.painel.subsistemas.auth.FachadaProxy;
 import br.com.cagepa.painel.subsistemas.auth.JWTToken;
 
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
+
+    //O Proxy é estático para ser acessado por toda a Main
+    private static final IFachada sistema = new FachadaProxy();
+    private static String tokenAtual = null;
+
     public static void main(String[] args) {
-        System.out.println("=== INICIANDO SISTEMA PAINEL CAGEPA ===");
+        Scanner scanner = new Scanner(System.in);
+        boolean rodando = true;
 
-        //Instancia o Proxy (Ele que controla o acesso à Fachada real)
-        IFachada sistema = new FachadaProxy();
+        System.out.println("=========================================");
+        System.out.println("   PAINEL DE MONITORAMENTO CAGEPA (CLI)  ");
+        System.out.println("=========================================");
 
-        JWTToken tokenAdmin = null;
-
-        //Teste 01: Tentar acessar sem login (Deve Falhar)
-        System.out.println("\n--- Teste 01: Acesso sem Token ---");
-        try {
-            sistema.cadastrarCliente("Indivíduo", "00000000000", "fake_token");
-        } catch (AutenticacaoException e) {
-            System.out.println("SUCESSO: O sistema bloqueou o acesso não autorizado.");
-            System.out.println("Mensagem: " + e.getMessage());
-        }
-
-        //Teste 02: Realizar Login
-        System.out.println("\n--- Teste 02: Realizando Login ---");
-        try {
-            tokenAdmin = sistema.login("admin@cagepa.com.br", "admin123");
-            System.out.println("Login realizado! Token recebido: " + tokenAdmin.getTokenString().substring(0, 10) + "...");
-        } catch (Exception e) {
-            System.out.println("Erro fatal no login: " + e.getMessage());
-            return;
-        }
-
-        //Teste 03: Cadastrar Clientes (Deve Funcionar)
-        System.out.println("\n--- Teste 03: Cadastrando Clientes ---");
-        try {
-            String tokenStr = tokenAdmin.getTokenString();
-
-            sistema.cadastrarCliente("Indivíduo Um", "12345678900", tokenStr);
-            sistema.cadastrarCliente("Empresa XYZ", "12345678000199", tokenStr);
+        while (rodando) {
+            exibirMenu();
+            System.out.print("> ");
+            String opcao = scanner.nextLine();
 
             try {
-                sistema.cadastrarCliente("Indivíduo Um", "12345678900", tokenStr);
-            } catch (IllegalArgumentException e) {
-                System.out.println("Validação funcionando: " + e.getMessage());
+                switch (opcao) {
+                    case "1":
+                        realizarLogin(scanner);
+                        break;
+                    case "2":
+                        cadastrarCliente(scanner);
+                        break;
+                    case "3":
+                        listarClientes();
+                        break;
+                    case "4":
+                        processarImagem(scanner);
+                        break;
+                    case "5":
+                        monitorarRede(scanner);
+                        break;
+                    case "6":
+                        vincularHidrometro(scanner);
+                        break;
+                    case "7":
+                        consultarHistorico(scanner);
+                        break;
+                    case "8":
+                        removerCliente(scanner);
+                        break;
+                    case "0":
+                        rodando = false;
+                        System.out.println("Encerrando sistema...");
+                        break;
+                    default:
+                        System.out.println("Opção inválida!");
+                }
+            } catch (Exception e) {
+                System.out.println("ERRO: " + e.getMessage());
             }
-        } catch (Exception e) {
-            System.out.println("Erro ao cadastrar: " + e.getMessage());
+            System.out.println("-----------------------------------------");
         }
-
-        //Teste 04: Listar Dados
-        System.out.println("\n--- Teste 04: Listagem Geral ---");
-        List<ClienteDTO> clientes = sistema.listarClientes(tokenAdmin.getTokenString());
-
-        System.out.println("Total de Clientes: " + clientes.size());
-        for(ClienteDTO c : clientes) {
-            System.out.println("- Cliente: " + c.nome() + " | Doc: " + c.cpfCnpj());
-        }
-
-        //Teste 05: Processamento de Imagem (Template Method + Adapter)
-        System.out.println("\n--- Teste 5: Processamento de Imagem ---");
-
-        br.com.cagepa.painel.subsistemas.processamento_imagem.ProcessadorImagemImpl processador = new br.com.cagepa.painel.subsistemas.processamento_imagem.ProcessadorImagemImpl();
-
-        try {
-            var leitura = processador.processar("C:/imagens/hidrometro_01.jpg", "SHA-123");
-            System.out.println("RESULTADO FINAL: Leitura gerada -> " + leitura.getValorM3() + "m3");
-        } catch (Exception e) {
-            System.out.println("Erro no processamento: " + e.getMessage());
-        }
-
-        //Teste 06: Monitoramento (Strategy + Observer)
-        System.out.println("\n--- Teste 6: Monitoramento de Consumo ---");
-
-        br.com.cagepa.painel.subsistemas.monitoramento.AgregadorConsumo agregador = new br.com.cagepa.painel.subsistemas.monitoramento.AgregadorConsumo();
-
-        //Configurando Observer
-        agregador.getSubject().adicionarObservador(l -> {
-            System.out.println(">> ALERTA (Observer): Nova leitura detectada no SHA " + l.getMatriculaSHA() + " Valor: " + l.getValorM3());
-        });
-
-        //Simulando a chegada de uma leitura
-        var leituraRecente = new br.com.cagepa.painel.core.entidades.Leitura("SHA-123", 150.0);
-        agregador.novaLeituraRecebida(leituraRecente);
-
-        //Testando o Strategy (Cálculo)
-        List<br.com.cagepa.painel.core.entidades.Leitura> historico = List.of(
-                new br.com.cagepa.painel.core.entidades.Leitura("SHA-123", 100.0),
-                new br.com.cagepa.painel.core.entidades.Leitura("SHA-123", 200.0)
-        );
-
-        double media = agregador.processarHistorico(historico);
-        System.out.println("Cálculo via Strategy (Média): " + media);
-
-        //Teste 07: Sistema de Alertas (Chain of Responsibility + Template Method)
-        System.out.println("\n--- Teste 7: Sistema de Alertas ---");
-
-        br.com.cagepa.painel.subsistemas.notificacao.AlertaService alertaService =
-                new br.com.cagepa.painel.subsistemas.notificacao.AlertaService();
-
-        //Cenário 1: Consumo normal (sem alertas)
-        System.out.println(">> Processando leitura normal (50m3)...");
-        alertaService.processarLeitura(new br.com.cagepa.painel.core.entidades.Leitura("SHA-001", 50.0));
-
-        //Cenário 2: Consumo elevado (Chain preventiva)
-        System.out.println("\n>> Processando leitura alta (85m3)...");
-        alertaService.processarLeitura(new br.com.cagepa.painel.core.entidades.Leitura("SHA-002", 85.0));
-
-        //Cenário 3: Consumo crítico (Chain crítica + Notificação)
-        System.out.println("\n>> Processando leitura crítica (110m3)...");
-        alertaService.processarLeitura(new br.com.cagepa.painel.core.entidades.Leitura("SHA-003", 110.0));
-
-        System.out.println("\n=== FIM DOS TESTES ===");
+        scanner.close();
     }
 
+    private static void exibirMenu() {
+        String statusAuth = (tokenAtual != null) ? "[LOGADO]" : "[DESCONECTADO]";
+        System.out.println("\nSTATUS: " + statusAuth);
+        System.out.println("1. Login (Admin)");
+        System.out.println("2. Cadastrar Cliente");
+        System.out.println("3. Listar Clientes");
+        System.out.println("4. Processar Leitura Manual (OCR/Arquivo)");
+        System.out.println("5. Monitorar Rede");
+        System.out.println("6. Vincular Hidrômetro a Cliente");
+        System.out.println("7. Consultar Histórico de Consumo");
+        System.out.println("8. Remover Cliente");
+        System.out.println("0. Sair");
+        System.out.print("Escolha uma opção: ");
+    }
+
+    private static void realizarLogin(Scanner scanner) {
+        System.out.print("Email: ");
+        String email = scanner.nextLine();
+        System.out.print("Senha: ");
+        String senha = scanner.nextLine();
+
+        //Chama a Fachada (via Proxy, mas login passa direto)
+        JWTToken token = sistema.login(email, senha);
+        tokenAtual = token.getTokenString();
+        System.out.println("SUCESSO: Login realizado!");
+    }
+
+    private static void cadastrarCliente(Scanner scanner) {
+        if (tokenAtual == null) {
+            System.out.println("AVISO: Faça login primeiro!");
+            return;
+        }
+        System.out.print("Nome do Cliente: ");
+        String nome = scanner.nextLine();
+        System.out.print("CPF/CNPJ: ");
+        String cpf = scanner.nextLine();
+
+        //Chama a Fachada (Proxy valida o token)
+        sistema.cadastrarCliente(nome, cpf, tokenAtual);
+        System.out.println("SUCESSO: Cliente enviado para cadastro.");
+    }
+
+    private static void listarClientes() {
+        if (tokenAtual == null) {
+            System.out.println("AVISO: Faça login primeiro!");
+            return;
+        }
+        List<ClienteDTO> clientes = sistema.listarClientes(tokenAtual);
+        if (clientes.isEmpty()) {
+            System.out.println("Nenhum cliente encontrado (memória vazia).");
+        } else {
+            System.out.println("\n--- Lista de Clientes ---");
+            for (ClienteDTO c : clientes) {
+                System.out.println("Nome: " + c.nome() + " | Doc: " + c.cpfCnpj());
+            }
+        }
+    }
+
+    private static void processarImagem(Scanner scanner) {
+        if (tokenAtual == null) {
+            System.out.println("AVISO: Faça login primeiro!");
+            return;
+        }
+        System.out.print("Caminho do arquivo de imagem: ");
+        String caminho = scanner.nextLine();
+        System.out.print("Matrícula do SHA: ");
+        String matricula = scanner.nextLine();
+
+        System.out.println("Iniciando processamento...");
+        sistema.processarLeituraManual(caminho, matricula, tokenAtual);
+    }
+
+    private static void monitorarRede(Scanner scanner) {
+        if (tokenAtual == null) {
+            System.out.println("AVISO: Faça login primeiro!");
+            return;
+        }
+        System.out.println("\n--- INICIANDO VARREDURA DE MONITORAMENTO ---");
+        //Aqui poderia colocar um loop (while) com Thread.sleep(5000) para fazer automático a cada 5s
+        //Para testes, chamar uma vez é mais seguro.
+        sistema.monitorarRede(tokenAtual);
+        System.out.println("--- FIM DA VARREDURA ---");
+    }
+
+    private static void vincularHidrometro(Scanner scanner) {
+        if (tokenAtual == null) {
+            System.out.println("AVISO: Faça login primeiro!");
+            return;
+        }
+        System.out.print("CPF do Cliente Dono: ");
+        String cpf = scanner.nextLine();
+
+        System.out.print("Matrícula do SHA (Ex: SHA-01): ");
+        String matricula = scanner.nextLine();
+
+        System.out.print("Caminho da Pasta das Imagens: ");
+        String caminho = scanner.nextLine(); //Caminho da Pasta!
+
+        sistema.vincularHidrometro(cpf, matricula, caminho, tokenAtual);
+        System.out.println("SUCESSO: Vinculação realizada.");
+    }
+
+    private static void consultarHistorico(Scanner scanner) {
+        if (tokenAtual == null) {
+            System.out.println("AVISO: Faça login primeiro!");
+            return;
+        }
+        System.out.print("Matrícula do SHA para consulta: ");
+        String matricula = scanner.nextLine();
+
+        List<ConsumoDTO> historico = sistema.consultarHistoricoSHA(matricula, tokenAtual);
+
+        if (historico.isEmpty()) {
+            System.out.println("Nenhum histórico encontrado (ou SHA não existe). Execute a opção 5 primeiro.");
+        } else {
+            System.out.println("\n--- Histórico de Consumo: " + matricula + " ---");
+            for (ConsumoDTO c : historico) {
+                System.out.println("Data: " + c.dataHora() + " | Leitura: " + c.leituraAtual() + "m3");
+            }
+        }
+    }
+
+    private static void removerCliente(Scanner scanner) {
+        if (tokenAtual == null) {
+            System.out.println("AVISO: Faça login primeiro!");
+            return;
+        }
+        System.out.print("CPF do Cliente a remover: ");
+        String cpf = scanner.nextLine();
+
+        sistema.removerCliente(cpf, tokenAtual);
+        System.out.println("SUCESSO: Cliente removido.");
+    }
 }
