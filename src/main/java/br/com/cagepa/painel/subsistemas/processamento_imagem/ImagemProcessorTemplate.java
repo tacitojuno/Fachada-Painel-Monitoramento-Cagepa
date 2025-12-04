@@ -33,12 +33,30 @@ public abstract class ImagemProcessorTemplate {
     }
 
     protected double tratarDados(String texto) {
-        Logger.getInstance().log("TEMPLATE: Convertendo texto '" + texto + "' para número...");
+        Logger.getInstance().log("TEMPLATE: Texto bruto recebido: '" + texto + "'");
+
         try {
-            return Double.parseDouble(texto);
+            //Substitui vírgulas por pontos (caso o OCR leia 10,5 em vez de 10.5)
+            String textoNormalizado = texto.replace(",", ".");
+
+            //REGEX: Substitui tudo que NÃO for número ou ponto por ESPAÇO
+            String apenasNumeros = textoNormalizado.replaceAll("[^0-9.]", " ");
+
+            //Quebra em partes baseadas nos espaços e pega a primeira parte não vazia
+            //Geralmente o contador principal é o primeiro número grande que aparece
+            String[] partes = apenasNumeros.trim().split("\\s+");
+
+            if (partes.length > 0 && !partes[0].isEmpty()) {
+                String numeroLimpo = partes[0];
+                Logger.getInstance().log("TEMPLATE: Número extraído após limpeza: " + numeroLimpo);
+                return Double.parseDouble(numeroLimpo);
+            }
+
         } catch (NumberFormatException e) {
-            return 0.0;
+            Logger.getInstance().logErro("Falha ao converter número: " + texto);
         }
+
+        return 0.0;
     }
 
     protected Leitura criarLeitura(String matricula, double valor) {
